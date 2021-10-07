@@ -17,8 +17,8 @@ repositories {
 val vertxVersion = "4.1.4"
 val junitJupiterVersion = "5.7.0"
 
-val mainVerticleName = "com.chenchen.geekwalk.MainVerticle"
-val launcherClassName = "io.vertx.core.Launcher"
+val mainVerticleName = "com.chenchen.geekwalk.ProxyVerticle"
+val launcherClassName = "com.chenchen.geekwalk.launcher.GeekLauncher"
 
 val watchForChange = "src/**/*"
 val doOnChange = "${projectDir}/gradlew classes"
@@ -56,7 +56,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-  args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
+  args = listOf("run", mainVerticleName, "-conf", "src/main/resources/config.json")
 }
 
 tasks.withType<JavaCompile> {

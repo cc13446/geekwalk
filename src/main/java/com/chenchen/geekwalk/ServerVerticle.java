@@ -31,10 +31,11 @@ public class ServerVerticle extends AbstractVerticle {
         });
 
     router.errorHandler(500, rc -> {
-      rc.failure().printStackTrace();
       rc.response().setStatusCode(500).end("500:我错咧");
     });
-
+    router.errorHandler(404, rc -> {
+      rc.response().setStatusCode(404).end("404:no page");
+    });
     server.requestHandler(router).listen(8888, event -> {
       if (event.succeeded()) {
         System.out.println("server启动在8888端口");
