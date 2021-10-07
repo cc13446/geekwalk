@@ -21,12 +21,12 @@ public class ProxyVerticle extends AbstractVerticle {
 
     // 收到一个请求
     server.requestHandler(request -> {
+      // 把request暂停
+      request.pause();
+
+      // 获取到response
       HttpServerResponse response = request.response();
       response.setChunked(true);
-
-      // 把请求的buffer记录下来
-      Queue<Buffer> buffers = new LinkedList<>();
-      request.handler(buffers::add);
 
       // 创建一个requestInner
       client.request(request.method(), request.uri(), ar -> {
@@ -55,11 +55,10 @@ public class ProxyVerticle extends AbstractVerticle {
               response.setStatusCode(500).end(ar.cause().getMessage());
             }
           });
-          // 传递request内容
-          while (!buffers.isEmpty()) {
-            requestInner.write(buffers.poll());
-          }
-          requestInner.end();
+          // 恢复request
+          request.resume();
+          request.handler(requestInner::write);
+          request.endHandler(x -> requestInner.end());
         } else {
           // 创建requestInner失败
           ar.cause().printStackTrace();
