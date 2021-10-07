@@ -11,7 +11,7 @@ import java.util.List;
 public class ProxyVerticle extends AbstractVerticle {
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     // 启动被代理服务器
     vertx.deployVerticle(new ServerVerticle());
     // 获取配置
@@ -31,6 +31,7 @@ public class ProxyVerticle extends AbstractVerticle {
         if (path.startsWith(upstream.getPrefix())) {
           client = upstream.getHttpClient();
           uri = upstream.getPath() + request.uri().substring(upstream.getPrefix().length());
+          break;
         }
       }
       if (null == client) {
@@ -78,6 +79,8 @@ public class ProxyVerticle extends AbstractVerticle {
     // 获取被代理服务器配置
     List<Upstream> upstreams = new LinkedList<>();
     config().getJsonArray("upstream").stream().forEach(json -> upstreams.add(new Upstream((JsonObject) json, vertx)));
+    // 对upstreams根据prefix进行排序, 最长前缀
+    upstreams.sort((o1, o2) -> o2.getPrefix().length() - o1.getPrefix().length());
     return upstreams;
   }
 }
