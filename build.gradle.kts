@@ -58,3 +58,7 @@ tasks.withType<Test> {
 tasks.withType<JavaExec> {
   args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
 }
+
+tasks.withType<JavaCompile> {
+  options.encoding = "UTF-8"
+}

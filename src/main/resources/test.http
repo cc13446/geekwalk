@@ -1,0 +1,21 @@
+GET http://localhost:8888/hello
+
+###
+
+POST http://localhost:8888/hello
+Content-Type: application/json
+
+{"name": "chenchen"}
+
+###
+
+GET http://localhost:9999/hello
+
+###
+
+POST http://localhost:9999/hello
+Content-Type: application/json
+
+{"name": "chenchen"}
+
+###
