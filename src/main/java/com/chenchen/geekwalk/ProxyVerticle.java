@@ -7,14 +7,14 @@ public class ProxyVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-
     HttpServer server = vertx.createHttpServer();
     HttpClientOptions clientOptions = new HttpClientOptions();
-    clientOptions.setDefaultHost("127.0.0.1");
-    clientOptions.setDefaultPort(8888);
-
+    clientOptions.setDefaultHost("www.baidu.com");
+    clientOptions.setDefaultPort(443);
+    clientOptions.setSsl(true);
+    clientOptions.setKeepAlive(true);
+    clientOptions.setTrustAll(true);
     HttpClient client = vertx.createHttpClient(clientOptions);
-
     // 收到一个请求
     server.requestHandler(request -> {
       // 把request暂停
@@ -22,17 +22,15 @@ public class ProxyVerticle extends AbstractVerticle {
       // 获取到response
       HttpServerResponse response = request.response();
       response.setChunked(true);
-
       // 创建一个requestInner
       client.request(request.method(), request.uri(), ar -> {
         // 创建成功
         if (ar.succeeded()) {
           HttpClientRequest requestInner = ar.result();
           requestInner.setChunked(true);
-
           // 传递request的header
           requestInner.headers().setAll(request.headers());
-
+          requestInner.putHeader("Host", "www.baidu.com:443");
           // 发送requestInner,内容为request
           requestInner.send(request).onSuccess(responseInner -> {
             // 传递response
