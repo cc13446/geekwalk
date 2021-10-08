@@ -1,0 +1,24 @@
+{
+  "port": 9999,
+  "frontend": [
+    {
+      "prefix": "/web1",
+      "dir": "src/test/resources/web1",
+      "reRoute404": "/web1"
+    },
+    {
+      "prefix": "/web2",
+      "dir": "src/test/resources/web2"
+    }
+  ],
+  "upstream": [
+    {
+      "prefix": "/a",
+      "url": "http://127.0.0.1:8888/"
+    },
+    {
+      "prefix": "/",
+      "url": "http://127.0.0.1:8888/"
+    }
+  ]
+}

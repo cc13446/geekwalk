@@ -23,7 +23,7 @@ class ProxyVerticleTest {
   @BeforeEach
   void setUp(Vertx vertx, VertxTestContext vertxTestContext) {
     DeploymentOptions deploymentOptions = new DeploymentOptions();
-    File file = new File("src/main/resources/config.json");
+    File file = new File("src/test/resources/config.json");
     deploymentOptions.setConfig(new JsonObject((Map<String, Object>) new JsonSlurper().parse(file)));
 
     vertx.deployVerticle(new ServerVerticle(), ar -> {
@@ -51,6 +51,49 @@ class ProxyVerticleTest {
       .expect(ResponsePredicate.status(200))
       .send().onSuccess(response -> {
         assertThat(response.bodyAsString()).isEqualTo("hello vertx");
+        vertxTestContext.completeNow();
+      }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
+  }
+
+  @Test
+  void testFrontedWeb1(Vertx vertx, VertxTestContext vertxTestContext) {
+    WebClient client = WebClient.create(vertx);
+    client.get(9999, "127.0.0.1", "/web1")
+      .expect(ResponsePredicate.status(200))
+      .send().onSuccess(response -> {
+        System.out.println(response.bodyAsString());
+        vertxTestContext.completeNow();
+      }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
+  }
+
+  @Test
+  void testFrontedWeb2(Vertx vertx, VertxTestContext vertxTestContext) {
+    WebClient client = WebClient.create(vertx);
+    client.get(9999, "127.0.0.1", "/web2")
+      .expect(ResponsePredicate.status(200))
+      .send().onSuccess(response -> {
+        System.out.println(response.bodyAsString());
+        vertxTestContext.completeNow();
+      }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
+  }
+
+  @Test
+  void testFrontedWeb1404(Vertx vertx, VertxTestContext vertxTestContext) {
+    WebClient client = WebClient.create(vertx);
+    client.get(9999, "127.0.0.1", "/web1/nopage.html")
+      .expect(ResponsePredicate.status(200))
+      .send().onSuccess(response -> {
+        System.out.println(response.bodyAsString());
+        vertxTestContext.completeNow();
+      }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
+  }
+  @Test
+  void testFrontedWeb2404(Vertx vertx, VertxTestContext vertxTestContext) {
+    WebClient client = WebClient.create(vertx);
+    client.get(9999, "127.0.0.1", "/web2/nopage.html")
+      .expect(ResponsePredicate.SC_NOT_FOUND)
+      .send().onSuccess(response -> {
+        System.out.println(response.bodyAsString());
         vertxTestContext.completeNow();
       }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
   }

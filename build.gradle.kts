@@ -59,7 +59,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-  args = listOf("run", mainVerticleName, "-conf", "src/main/resources/config.json")
+  args = listOf("run", mainVerticleName, "-conf", "src/test/resources/config.json")
 }
 
 tasks.withType<JavaCompile> {
