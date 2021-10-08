@@ -12,8 +12,6 @@ public class ProxyVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
-    // 启动被代理服务器
-    vertx.deployVerticle(new ServerVerticle());
     // 获取配置
     List<Upstream> upstreams = getUpstreams();
     Integer port = getPort();

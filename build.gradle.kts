@@ -3,6 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
 plugins {
   java
+  groovy
   application
   id("com.github.johnrengelman.shadow") version "7.0.0"
 }
@@ -29,10 +30,12 @@ application {
 
 dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
-  implementation("io.vertx:vertx-web-client")
-  implementation("io.vertx:vertx-web")
-  testImplementation("io.vertx:vertx-junit5")
-  testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+  implementation("io.vertx:vertx-web-client:$vertxVersion")
+  implementation("io.vertx:vertx-web:$vertxVersion")
+  testImplementation("io.vertx:vertx-junit5:$vertxVersion")
+  testImplementation("org.junit.jupiter:junit-jupiter:$vertxVersion")
+  testImplementation("org.assertj:assertj-core:3.19.0")
+  implementation("org.codehaus.groovy:groovy-all:3.0.8")
 }
 
 java {
