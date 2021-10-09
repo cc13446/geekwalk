@@ -15,8 +15,8 @@ public class ServerVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
+    int port = context.config().getInteger("port");
     HttpServer server = vertx.createHttpServer();
-
     Router router = Router.router(vertx);
 
     // websocket
@@ -32,7 +32,7 @@ public class ServerVerticle extends AbstractVerticle {
     router.get("/hello").handler(routingContext -> {
       HttpServerResponse response = routingContext.response();
       HttpServerRequest request = routingContext.request();
-      response.end("hello vertx");
+      response.end("hello" + port);
     });
 
     router.post("/hello")
@@ -48,9 +48,9 @@ public class ServerVerticle extends AbstractVerticle {
     router.errorHandler(404, rc -> {
       rc.response().setStatusCode(404).end("404:no page");
     });
-    server.requestHandler(router).listen(8888, event -> {
+    server.requestHandler(router).listen(port, event -> {
       if (event.succeeded()) {
-        System.out.println("server启动在8888端口");
+        System.out.println("server启动在" + port + "端口");
       } else {
         event.cause().printStackTrace();
       }

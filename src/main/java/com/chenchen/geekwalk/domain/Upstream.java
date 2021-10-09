@@ -16,8 +16,12 @@ public class Upstream {
   private final int weight;
 
   public Upstream(JsonObject jsonObject, Vertx vertx) {
-    this.url = jsonObject.getString("url");
-    this.weight = jsonObject.getInteger("weight");
+    this(jsonObject.getString("url"), jsonObject.getInteger("weight", 1), vertx);
+  }
+
+  public Upstream(String url, int weight, Vertx vertx) {
+    this.url = url;
+    this.weight = weight;
 
     try {
       URL urlParsed = new URL(this.url);
