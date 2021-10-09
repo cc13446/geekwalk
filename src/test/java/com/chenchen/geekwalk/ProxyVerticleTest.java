@@ -69,12 +69,35 @@ class ProxyVerticleTest {
   }
 
   @Test
+  void testFrontedWeb1Cache(Vertx vertx, VertxTestContext vertxTestContext) {
+    WebClient client = WebClient.create(vertx);
+    client.get(9999, "127.0.0.1", "/web1")
+      .expect(ResponsePredicate.status(200))
+      .send().onSuccess(response -> {
+        assertThat(response.getHeader("cache-control")).isEqualTo("public, immutable, max-age=30");
+        vertxTestContext.completeNow();
+      }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
+  }
+
+  @Test
   void testFrontedWeb2(Vertx vertx, VertxTestContext vertxTestContext) {
     WebClient client = WebClient.create(vertx);
     client.get(9999, "127.0.0.1", "/web2")
       .expect(ResponsePredicate.status(200))
       .send().onSuccess(response -> {
         System.out.println(response.bodyAsString());
+        vertxTestContext.completeNow();
+      }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
+  }
+
+  @Test
+  void testFrontedWeb2NoCache(Vertx vertx, VertxTestContext vertxTestContext) {
+    WebClient client = WebClient.create(vertx);
+    client.get(9999, "127.0.0.1", "/web2")
+      .expect(ResponsePredicate.status(200))
+      .send().onSuccess(response -> {
+        assertThat(response.headers().getAll("cache-control")).hasSize(2);
+        assertThat(response.getHeader("cache-control")).contains("no-");
         vertxTestContext.completeNow();
       }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
   }

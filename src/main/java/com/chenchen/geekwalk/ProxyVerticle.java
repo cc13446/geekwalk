@@ -25,7 +25,19 @@ public class ProxyVerticle extends AbstractVerticle {
     Router router = Router.router(vertx);
     for (Frontend frontend : frontends) {
       router.route(frontend.getPrefix())
-        .handler(StaticHandler.create().setAllowRootFileSystemAccess(true).setWebRoot(frontend.getDir()));
+        .handler(rc -> {
+          if (!frontend.isCachingEnabled()) {
+            rc.response().headers()
+              .add("cache-control", "no-cache")
+              .add("cache-control", "no-store");
+          }
+          rc.next();
+        })
+        .handler(StaticHandler.create()
+          .setAllowRootFileSystemAccess(true)
+          .setWebRoot(frontend.getDir())
+          .setCachingEnabled(frontend.isCachingEnabled())
+          .setMaxAgeSeconds(frontend.getMaxAgeSeconds()));
     }
     router.errorHandler(404, err -> {
       for (Frontend frontend : frontends) {
