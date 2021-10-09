@@ -1,6 +1,7 @@
 package com.chenchen.geekwalk;
 
 import com.chenchen.geekwalk.domain.Frontend;
+import com.chenchen.geekwalk.domain.Backend;
 import com.chenchen.geekwalk.domain.Upstream;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -9,7 +10,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class ProxyVerticle extends AbstractVerticle {
   @Override
   public void start() {
     // 获取配置
-    List<Upstream> upstreams = getUpstreams();
+    List<Backend> backends = getUpstreams();
     List<Frontend> frontends = getFrontends();
     Integer port = getPort();
     // 静态资源的router
@@ -65,26 +65,26 @@ public class ProxyVerticle extends AbstractVerticle {
       HttpServerResponse response = request.response();
       String path = request.path();
       // 选择一个代理
-      Upstream upstream = null;
-      for (Upstream u : upstreams) {
+      Backend backend = null;
+      for (Backend u : backends) {
         if (path.startsWith(u.getPrefix())) {
-          upstream = u;
+          backend = u;
           break;
         }
       }
-      if (null == upstream) {
+      if (null == backend) {
         response.setStatusCode(404).end("unknown path");
         return;
       }
 
-      String uri = upstream.getPath() + request.uri().substring(upstream.getPrefix().length());
+      Upstream upstream = backend.getUpstream();
+      String uri = upstream.getPath() + request.uri().substring(backend.getPrefix().length());
 
       String upgrade = request.getHeader("Upgrade");
       if (null != upgrade && upgrade.equals("websocket")) {
         Future<ServerWebSocket> fut = request.toWebSocket();
-        Upstream finalUpstream = upstream;
         fut.onSuccess(ws -> {
-          finalUpstream.getHttpClient().webSocket(uri).onSuccess(clientWS -> {
+          upstream.getHttpClient().webSocket(uri).onSuccess(clientWS -> {
             clientWS.frameHandler(ws::writeFrame);
             ws.frameHandler(clientWS::writeFrame);
             ws.closeHandler(x -> clientWS.close());
@@ -133,13 +133,13 @@ public class ProxyVerticle extends AbstractVerticle {
     return context.config().getInteger("port");
   }
 
-  private List<Upstream> getUpstreams() {
+  private List<Backend> getUpstreams() {
     // 获取被代理服务器配置
-    List<Upstream> upstreams = new LinkedList<>();
-    config().getJsonArray("upstream").stream().forEach(json -> upstreams.add(new Upstream((JsonObject) json, vertx)));
+    List<Backend> backends = new LinkedList<>();
+    config().getJsonArray("backend").stream().forEach(json -> backends.add(new Backend((JsonObject) json, vertx)));
     // 对upstreams根据prefix进行排序, 最长前缀
-    upstreams.sort((o1, o2) -> o2.getPrefix().length() - o1.getPrefix().length());
-    return upstreams;
+    backends.sort((o1, o2) -> o2.getPrefix().length() - o1.getPrefix().length());
+    return backends;
   }
 
   private List<Frontend> getFrontends() {

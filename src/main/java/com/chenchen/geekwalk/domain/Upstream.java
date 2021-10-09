@@ -10,15 +10,14 @@ import java.net.URL;
 
 public class Upstream {
 
-  private final String prefix;
   private final String url;
   private String path;
-
   private HttpClient httpClient;
+  private final int weight;
 
   public Upstream(JsonObject jsonObject, Vertx vertx) {
-    this.prefix = jsonObject.getString("prefix");
     this.url = jsonObject.getString("url");
+    this.weight = jsonObject.getInteger("weight");
 
     try {
       URL urlParsed = new URL(this.url);
@@ -28,6 +27,10 @@ public class Upstream {
       HttpClientOptions clientOptions = new HttpClientOptions();
       clientOptions.setDefaultHost(host);
       clientOptions.setDefaultPort(port);
+      if (urlParsed.getProtocol().equals("https")) {
+        clientOptions.setSsl(true);
+        clientOptions.setTrustAll(true);
+      }
       this.httpClient = vertx.createHttpClient(clientOptions);
     } catch (MalformedURLException e) {
       e.printStackTrace();
@@ -38,15 +41,15 @@ public class Upstream {
     return httpClient;
   }
 
-  public String getPrefix() {
-    return prefix;
-  }
-
   public String getUrl() {
     return url;
   }
 
   public String getPath() {
     return path;
+  }
+
+  public int getWeight() {
+    return weight;
   }
 }
