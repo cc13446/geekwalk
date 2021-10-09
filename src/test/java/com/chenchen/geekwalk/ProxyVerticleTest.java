@@ -3,6 +3,8 @@ package com.chenchen.geekwalk;
 import groovy.json.JsonSlurper;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
@@ -87,14 +89,48 @@ class ProxyVerticleTest {
         vertxTestContext.completeNow();
       }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
   }
+
   @Test
   void testFrontedWeb2404(Vertx vertx, VertxTestContext vertxTestContext) {
     WebClient client = WebClient.create(vertx);
     client.get(9999, "127.0.0.1", "/web2/nopage.html")
       .expect(ResponsePredicate.SC_NOT_FOUND)
       .send().onSuccess(response -> {
-        System.out.println(response.bodyAsString());
+        assertThat(response.bodyAsString()).isEqualTo("no page");
         vertxTestContext.completeNow();
       }).onFailure(err -> vertxTestContext.failNow(err.getMessage()));
   }
+
+  @Test
+  void testWebsocket(Vertx vertx, VertxTestContext vertxTestContext) {
+
+    HttpClientOptions clientOptions = new HttpClientOptions();
+    clientOptions.setDefaultPort(8888);
+    clientOptions.setDefaultHost("127.0.0.1");
+    HttpClient httpClient = vertx.createHttpClient(clientOptions);
+    httpClient.webSocket("/websocket").onSuccess(ws -> {
+      ws.handler(replyBuffer -> {
+        assertThat(replyBuffer.toString()).isEqualTo("hello websocket");
+        vertxTestContext.completeNow();
+      });
+      ws.exceptionHandler(vertxTestContext::failNow);
+    }).onFailure(vertxTestContext::failNow);
+  }
+
+  @Test
+  void testProxyWebsocket(Vertx vertx, VertxTestContext vertxTestContext) {
+
+    HttpClientOptions clientOptions = new HttpClientOptions();
+    clientOptions.setDefaultPort(9999);
+    clientOptions.setDefaultHost("127.0.0.1");
+    HttpClient httpClient = vertx.createHttpClient(clientOptions);
+    httpClient.webSocket("/websocket").onSuccess(ws -> {
+      ws.handler(replyBuffer -> {
+        assertThat(replyBuffer.toString()).isEqualTo("hello websocket");
+        vertxTestContext.completeNow();
+      });
+      ws.exceptionHandler(vertxTestContext::failNow);
+    }).onFailure(vertxTestContext::failNow);
+  }
+
 }
