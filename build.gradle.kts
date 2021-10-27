@@ -15,7 +15,7 @@ repositories {
   mavenCentral()
 }
 
-val vertxVersion = "4.1.4"
+val vertxVersion = "4.1.5"
 val junitJupiterVersion = "5.7.0"
 
 val mainVerticleName = "com.chenchen.geekwalk.ProxyVerticle"

@@ -10,42 +10,42 @@ import java.util.Random;
 
 public class Backend {
 
-  private final String prefix;
+    private final String prefix;
 
-  private List<Upstream> upstreams;
-  private List<Upstream> weightUpstreams;
-  private Random random = new Random();
+    private List<Upstream> upstreams;
+    private List<Upstream> weightUpstreams;
+    private Random random = new Random();
 
-  public Backend(JsonObject jsonObject, Vertx vertx) {
-    this.prefix = jsonObject.getString("prefix");
-    this.weightUpstreams = new LinkedList<>();
-    this.upstreams = new LinkedList<>();
-    Object o = jsonObject.getValue("upstream");
-    if (o instanceof JsonArray) {
-      JsonArray array = (JsonArray) o;
-      array.forEach(up -> {
-        Upstream upstream = new Upstream((JsonObject) up, vertx);
-        this.upstreams.add(upstream);
-        for (int i = 0; i < upstream.getWeight(); i++) {
-          weightUpstreams.add(upstream);
+    public Backend(JsonObject jsonObject, Vertx vertx) {
+        this.prefix = jsonObject.getString("prefix");
+        this.weightUpstreams = new LinkedList<>();
+        this.upstreams = new LinkedList<>();
+        Object o = jsonObject.getValue("upstream");
+        if (o instanceof JsonArray) {
+            JsonArray array = (JsonArray) o;
+            array.forEach(up -> {
+                Upstream upstream = new Upstream((JsonObject) up, vertx);
+                this.upstreams.add(upstream);
+                for (int i = 0; i < upstream.getWeight(); i++) {
+                    weightUpstreams.add(upstream);
+                }
+            });
+        } else {
+            String url = (String) o;
+            Upstream upstream = new Upstream(url, 1, vertx);
+            this.upstreams.add(upstream);
+            for (int i = 0; i < upstream.getWeight(); i++) {
+                weightUpstreams.add(upstream);
+            }
         }
-      });
-    } else {
-      String url = (String) o;
-      Upstream upstream = new Upstream(url, 1, vertx);
-      this.upstreams.add(upstream);
-      for (int i = 0; i < upstream.getWeight(); i++) {
-        weightUpstreams.add(upstream);
-      }
+
     }
 
-  }
+    public Upstream getUpstream() {
+        return weightUpstreams.get(random.nextInt(weightUpstreams.size()));
+    }
 
-  public Upstream getUpstream() {
-    return weightUpstreams.get(random.nextInt(weightUpstreams.size()));
-  }
-
-  public String getPrefix() {
-    return prefix;
-  }
+    public String getPrefix() {
+        return prefix;
+    }
 }

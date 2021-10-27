@@ -10,50 +10,50 @@ import java.net.URL;
 
 public class Upstream {
 
-  private final String url;
-  private String path;
-  private HttpClient httpClient;
-  private final int weight;
+    private final String url;
+    private String path;
+    private HttpClient httpClient;
+    private final int weight;
 
-  public Upstream(JsonObject jsonObject, Vertx vertx) {
-    this(jsonObject.getString("url"), jsonObject.getInteger("weight", 1), vertx);
-  }
-
-  public Upstream(String url, int weight, Vertx vertx) {
-    this.url = url;
-    this.weight = weight;
-
-    try {
-      URL urlParsed = new URL(this.url);
-      String host = urlParsed.getHost();
-      int port = urlParsed.getPort();
-      this.path = urlParsed.getPath();
-      HttpClientOptions clientOptions = new HttpClientOptions();
-      clientOptions.setDefaultHost(host);
-      clientOptions.setDefaultPort(port);
-      if (urlParsed.getProtocol().equals("https")) {
-        clientOptions.setSsl(true);
-        clientOptions.setTrustAll(true);
-      }
-      this.httpClient = vertx.createHttpClient(clientOptions);
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
+    public Upstream(JsonObject jsonObject, Vertx vertx) {
+        this(jsonObject.getString("url"), jsonObject.getInteger("weight", 1), vertx);
     }
-  }
 
-  public HttpClient getHttpClient() {
-    return httpClient;
-  }
+    public Upstream(String url, int weight, Vertx vertx) {
+        this.url = url;
+        this.weight = weight;
 
-  public String getUrl() {
-    return url;
-  }
+        try {
+            URL urlParsed = new URL(this.url);
+            String host = urlParsed.getHost();
+            int port = urlParsed.getPort();
+            this.path = urlParsed.getPath();
+            HttpClientOptions clientOptions = new HttpClientOptions();
+            clientOptions.setDefaultHost(host);
+            clientOptions.setDefaultPort(port);
+            if (urlParsed.getProtocol().equals("https")) {
+                clientOptions.setSsl(true);
+                clientOptions.setTrustAll(true);
+            }
+            this.httpClient = vertx.createHttpClient(clientOptions);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
-  public String getPath() {
-    return path;
-  }
+    public HttpClient getHttpClient() {
+        return httpClient;
+    }
 
-  public int getWeight() {
-    return weight;
-  }
+    public String getUrl() {
+        return url;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
 }
